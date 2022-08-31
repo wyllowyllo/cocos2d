@@ -6,9 +6,8 @@
 void SceneInGame::createBlock(int x, int y, int type)
 {
 	auto cache = Director::getInstance()->getTextureCache();
-	auto spr = Sprite::createWithTexture(cache->getTextureForKey("res/match3_tiles_px.png"), Rect(0,0,40,40));
+	auto spr = Sprite::createWithTexture(cache->getTextureForKey("res/match3_tiles_px.png"), Rect(40*type,0,40,40));
 	spr->setScale(2);
-	//spr->setPosition(Vec2(1280 / 2, 720 / 2));
 	addChild(spr);
 	setBlockData(x, y, type);
 	setBlockSprite(x, y, spr);
@@ -73,8 +72,17 @@ bool SceneInGame::init()
 {
 	if (!Scene::init()) return false;
 
+	srand(time(0));
 	Director::getInstance()->getTextureCache()->addImage("res/match3_tiles_px.png");
 
+	auto touch = EventListenerTouchOneByOne::create();
+	
+	touch->onTouchBegan = std::bind(&SceneInGame::onTouchBegan, this, std::placeholders::_1, std::placeholders::_2);
+	touch->onTouchMoved = std::bind(&SceneInGame::onTouchBegan, this, std::placeholders::_1, std::placeholders::_2);
+	touch->onTouchEnded = std::bind(&SceneInGame::onTouchBegan, this, std::placeholders::_1, std::placeholders::_2);
+	touch->onTouchCancelled = touch->onTouchEnded;
+
+	getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch, this);
  return true;
 }
 
@@ -89,6 +97,7 @@ void SceneInGame::onEnter()
 
 void SceneInGame::initUI()
 {
+
 }
 
 void SceneInGame::initGame()
@@ -96,7 +105,7 @@ void SceneInGame::initGame()
 	for (int i = 0; i < BLOCK_HORIZONTAL; i++)
 	{
 		for (int k = 0; k < BLOCK_VERTICAL; k++)
-			createBlock(i,k,1);
+			createBlock(i,k,rand()%4+1);
 	}
 	this->alignBlcokSprite();
 }
@@ -117,6 +126,23 @@ void SceneInGame::alignBlcokSprite()
 			if (s != nullptr) s->setPosition(ConvertBlcokCoordToGameCoord(Vec2(i, k)));
 		}
 	}
+}
+
+bool SceneInGame::onTouchBegan(Touch* t, Event* e)
+{
+	Vec2 p = ConvertGameCoordToBlockCoord(t->getLocation());
+
+	CCLOG("%f, %f", p.x, p.y);
+	destroyBlcok(p.x, p.y);
+	return true;
+}
+
+void SceneInGame::onTouchMoved(Touch* t, Event* e)
+{
+}
+
+void SceneInGame::onTouchEnded(Touch* t, Event* e)
+{
 }
 
 void SceneInGame::StartGame()

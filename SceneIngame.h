@@ -36,6 +36,11 @@ public:
 	void destroyGame();
 	void alignBlcokSprite();
 
+	bool onTouchBegan(Touch* t, Event* e);
+	void onTouchMoved(Touch* t, Event* e);
+	void onTouchEnded(Touch* t, Event* e);
+
+
 	void StartGame();
 	void PauseGame();
 	void WinGame();
