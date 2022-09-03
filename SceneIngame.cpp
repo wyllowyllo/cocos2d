@@ -60,6 +60,47 @@ Vec2 SceneInGame::ConvertBlcokCoordToGameCoord(Vec2 Blockcoord)
 	return blockOrigin + Vec2(BLOCK_WIDTH * Blockcoord.x, BLOCK_HEIGHT * Blockcoord.y);
 }
 
+int SceneInGame::findEmptyBlockIndex(int x, int y)
+{
+	for (int i = y; i < BLOCK_VERTICAL; i++) {
+		if (getBlockData(x, i) == 0) return i;
+	}
+	return -1;
+}
+
+int SceneInGame::findFilledBlockIndex(int x, int y)
+{
+	for (int i = y; i < BLOCK_VERTICAL; i++) {
+		if (getBlockData(x, i) != 0) return i;
+	}
+	return -1;
+}
+
+void SceneInGame::DropBlock(int x)
+{
+	for (int i = 0; i < BLOCK_VERTICAL; i++) {
+		int empty_y = findEmptyBlockIndex(x, i);
+		int filled_y = findFilledBlockIndex(x, empty_y + 1);
+		{
+			int a = getBlockData(x, empty_y);
+			int b = getBlockData(x, filled_y);
+			SWAP(int, a, b);
+			setBlockData(x, empty_y, a);
+			setBlockData(x, filled_y, b);
+		} {
+
+			Sprite* a = getBlockSprite(x, empty_y);
+			Sprite* b = getBlockSprite(x, filled_y);
+
+			SWAP(Sprite*, a, b);
+			setBlockSprite(x, empty_y, a);
+			setBlockSprite(x, filled_y, b);
+		}
+		alignBlcokSprite();
+	}
+
+}
+
 SceneInGame* SceneInGame::create()
 {
 	auto ret = new SceneInGame();
@@ -134,6 +175,7 @@ bool SceneInGame::onTouchBegan(Touch* t, Event* e)
 
 	CCLOG("%f, %f", p.x, p.y);
 	destroyBlcok(p.x, p.y);
+	DropBlock(p.x);
 	return true;
 }
 
