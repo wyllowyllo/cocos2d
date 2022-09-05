@@ -9,12 +9,19 @@
 class SceneInGame :public Scene {
 private:
 	GameState gamestate;
-	// if blockdata value is zero, it's empty block if value is a positive number(not zero) it's a block
 
+	// if blockdata value is zero, it's empty block if value is a positive number(not zero) it's a block
 	int BlockData[BLOCK_VERTICAL][BLOCK_HORIZONTAL];
 
 	//if blocksprite is nullptr, it's empty
 	Sprite* BlockSprite[BLOCK_VERTICAL][BLOCK_HORIZONTAL];
+
+	//유니크 스택을 위한 자료구조
+	Vec2 judgeStack[128];
+	//스택에 들어있는 자료의 수
+	int judgeStackCount = 0;
+	//0이라면 스택에 자료가 없음, 그게 아니라면 자료가 있음
+	int judgeData[BLOCK_VERTICAL][BLOCK_HORIZONTAL];
 
 	void createBlock(int x, int y, int type);
 	int getBlockData(int x, int y);
@@ -36,6 +43,12 @@ private:
 	int findFilledBlockIndex(int x, int y);
 	//블록 떨어뜨리는 함수
 	void DropBlock(int x);
+
+	void stackPush(Vec2 value);
+	Vec2 stackPop();
+	void stackEmpty();
+	bool stackFind(Vec2 value);
+	void judgeMatch(int x, int y);
 public:
 	static SceneInGame* create();
 	virtual bool init() override;

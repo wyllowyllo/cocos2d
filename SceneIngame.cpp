@@ -48,7 +48,7 @@ Vec2 SceneInGame::ConvertGameCoordToBlockCoord(Vec2 Gamecoord)
 		Vec2((BLOCK_HORIZONTAL * BLOCK_WIDTH) / 2, (BLOCK_VERTICAL * BLOCK_HEIGHT) / 2)
 		+ Vec2(BLOCK_WIDTH, BLOCK_HEIGHT) / 2;
 	Vec2 delta = Gamecoord - BlockOrigin;
-	Vec2 pos = Vec2((int)(delta.x / BLOCK_WIDTH + 0.5), (int)(delta.y / BLOCK_HEIGHT + 0.5));
+	Vec2 pos = Vec2((int)(delta.x /BLOCK_WIDTH + 0.5), (int)(delta.y /BLOCK_HEIGHT + 0.5));
 
 	return pos;
 }
@@ -80,7 +80,10 @@ void SceneInGame::DropBlock(int x)
 {
 	for (int i = 0; i < BLOCK_VERTICAL; i++) {
 		int empty_y = findEmptyBlockIndex(x, i);
-		int filled_y = findFilledBlockIndex(x, empty_y + 1);
+		if (empty_y == -1) continue;
+		int filled_y = findFilledBlockIndex(x, empty_y +1);
+		if (filled_y == -1) continue;
+
 		{
 			int a = getBlockData(x, empty_y);
 			int b = getBlockData(x, filled_y);
@@ -96,8 +99,41 @@ void SceneInGame::DropBlock(int x)
 			setBlockSprite(x, empty_y, a);
 			setBlockSprite(x, filled_y, b);
 		}
-		alignBlcokSprite();
+		
 	}
+	alignBlcokSprite();
+}
+
+void SceneInGame::stackPush(Vec2 value)
+{
+	if (judgeData[(int)value.y][(int)value.x] != 0) return; //prevent from overlap insert
+	judgeStack[judgeStackCount++] = value;
+	judgeData[(int)value.y][(int)value.x] = 1;
+}
+
+Vec2 SceneInGame::stackPop()
+{
+	auto ret = judgeStack[--judgeStackCount];
+	judgeData[(int)ret.y][(int)ret.x] = 0;
+	return ret;
+}
+
+void SceneInGame::stackEmpty()
+{
+	judgeStackCount = 0;
+	for (int i = 0; i < BLOCK_HORIZONTAL; i++) {
+		for (int k = 0; k < BLOCK_VERTICAL; k++)
+			judgeData[k][i] = 0;
+	}
+}
+
+bool SceneInGame::stackFind(Vec2 value)
+{
+	return judgeData[(int)value.y][(int)value.x] == 1;
+}
+
+void SceneInGame::judgeMatch(int x, int y)
+{
 
 }
 
@@ -119,8 +155,8 @@ bool SceneInGame::init()
 	auto touch = EventListenerTouchOneByOne::create();
 	
 	touch->onTouchBegan = std::bind(&SceneInGame::onTouchBegan, this, std::placeholders::_1, std::placeholders::_2);
-	touch->onTouchMoved = std::bind(&SceneInGame::onTouchBegan, this, std::placeholders::_1, std::placeholders::_2);
-	touch->onTouchEnded = std::bind(&SceneInGame::onTouchBegan, this, std::placeholders::_1, std::placeholders::_2);
+	touch->onTouchMoved = std::bind(&SceneInGame::onTouchMoved, this, std::placeholders::_1, std::placeholders::_2);
+	touch->onTouchEnded = std::bind(&SceneInGame::onTouchEnded, this, std::placeholders::_1, std::placeholders::_2);
 	touch->onTouchCancelled = touch->onTouchEnded;
 
 	getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch, this);
