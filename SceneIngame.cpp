@@ -33,12 +33,29 @@ void SceneInGame::setBlockSprite(int x, int y, Sprite* s)
 	BlockSprite[y][x] = s;
 }
 
-void SceneInGame::destroyBlcok(int x, int y)
+void SceneInGame::destroyBlock(int x, int y)
 {
 	if (BlockData[y][x] != 0) {
-		BlockSprite[y][x]->removeFromParent();
+		state = GameState::BLOCK_MOVING;
+		//BlockSprite[y][x]->removeFromParent();
+		BlockSprite[y][x]->runAction(Sequence::create(
+			FadeOut::create(0.125f),
+			FadeIn::create(0.125f),
+			FadeOut::create(0.125f),
+			FadeIn::create(0.125f),
+			Spawn::create(ScaleTo::create(0.125f, 0.0), FadeOut::create(0.0f), nullptr),
+			RemoveSelf::create(),
+			nullptr
+		));
+
 		BlockSprite[y][x] = nullptr;
 		BlockData[y][x] = 0;
+
+		this->runAction(Sequence::create(
+			DelayTime::create(0.625f),
+			CallFunc::create([=]() {DropBlock(x); }),
+			nullptr
+		));
 	}
 }
 
@@ -78,12 +95,18 @@ int SceneInGame::findFilledBlockIndex(int x, int y)
 
 void SceneInGame::DropBlock(int x)
 {
+	bool isDrop = false;
 	for (int i = 0; i < BLOCK_VERTICAL; i++) {
 		int empty_y = findEmptyBlockIndex(x, i);
 		if (empty_y == -1) continue;
 		int filled_y = findFilledBlockIndex(x, empty_y +1);
-		if (filled_y == -1) continue;
-
+		if (filled_y == -1) { //restock blocks 
+				createBlock(x, empty_y, rand() % BLOCK_VAR + 1);
+				BlockSprite[empty_y][x]->setPosition(ConvertBlcokCoordToGameCoord(Vec2(x, BLOCK_VERTICAL+1)));
+				BlockSprite[empty_y][x]->runAction(MoveTo::create(0.125f, ConvertBlcokCoordToGameCoord(Vec2(x, empty_y))));
+				continue;
+		}
+			
 		{
 			int a = getBlockData(x, empty_y);
 			int b = getBlockData(x, filled_y);
@@ -98,10 +121,20 @@ void SceneInGame::DropBlock(int x)
 			SWAP(Sprite*, a, b);
 			setBlockSprite(x, empty_y, a);
 			setBlockSprite(x, filled_y, b);
+
+			a->stopAllActions();
+			a->runAction(MoveTo::create(0.125f, ConvertBlcokCoordToGameCoord(Vec2(x, empty_y))));
 		}
-		
+		isDrop = true;
 	}
-	alignBlcokSprite();
+	//alignBlcokSprite();
+	if (isDrop) {
+		for (int i = 0; i < BLOCK_VERTICAL; i++) {
+			judgeMatch(x, i);
+		}
+	}
+	else
+		state = GameState::PLAYING;
 }
 
 void SceneInGame::stackPush(Vec2 value)
@@ -134,7 +167,54 @@ bool SceneInGame::stackFind(Vec2 value)
 
 void SceneInGame::judgeMatch(int x, int y)
 {
+	int blockdata = getBlockData(x, y);
+	if (blockdata == 0) return;
 
+	stackPush(Vec2(x, y));
+	int push_cnt = 0;
+
+	for (int i = 0; i < 4; i++) {
+		int next_x = x;
+		int next_y = y;
+		int inc_x;
+		int inc_y;
+
+		switch (i) {
+		case 0: inc_x = 1; inc_y = 0; push_cnt = 0; break;
+		case 1: inc_x = -1; inc_y = 0; break;
+		case 2: inc_x = 0; inc_y = 1; push_cnt = 0; break;
+		case 3: inc_x = 0; inc_y = -1; break;
+		}
+
+		while (true) {
+			next_x += inc_x;
+			next_y += inc_y;
+			if (next_x<0 || next_x>BLOCK_HORIZONTAL) break;
+			if (next_y<0 || next_y>BLOCK_VERTICAL) break;
+
+			if (getBlockData(next_x, next_y) == blockdata) {
+				stackPush(Vec2(next_x, next_y));
+				push_cnt++;
+			}
+			else break;
+		}
+
+		if (i % 2 == 0) continue;
+		if (push_cnt < 2) {
+			for (int i = 0; i < push_cnt; i++) {
+				stackPop();
+			}
+		}
+		if (judgeStackCount > 1) {
+			while (judgeStackCount > 0) {
+				Vec2 p = stackPop();
+				destroyBlock(p.x, p.y);
+			}
+		}
+		else
+			state = GameState::PLAYING;
+		stackEmpty();
+	}
 }
 
 SceneInGame* SceneInGame::create()
@@ -182,7 +262,7 @@ void SceneInGame::initGame()
 	for (int i = 0; i < BLOCK_HORIZONTAL; i++)
 	{
 		for (int k = 0; k < BLOCK_VERTICAL; k++)
-			createBlock(i,k,rand()%4+1);
+			createBlock(i,k,rand()%BLOCK_VAR+1);
 	}
 	this->alignBlcokSprite();
 }
@@ -210,8 +290,17 @@ bool SceneInGame::onTouchBegan(Touch* t, Event* e)
 	Vec2 p = ConvertGameCoordToBlockCoord(t->getLocation());
 
 	CCLOG("%f, %f", p.x, p.y);
-	destroyBlcok(p.x, p.y);
-	DropBlock(p.x);
+	if (state == GameState::PLAYING) {  // Func 'DestroyBlock' doesn't work when the state isn't a 'PLAYING'
+		if (p.x >= BLOCK_HORIZONTAL || p.x < 0) return true;
+		if (p.y >= BLOCK_VERTICAL || p.y < 0) return true;
+
+		destroyBlock(p.x, p.y);
+	}
+	//DropBlock(p.x);
+
+	/*for (int i = 0; i < BLOCK_VERTICAL; i++) {
+		judgeMatch(p.x, p.y);
+	}*/
 	return true;
 }
 

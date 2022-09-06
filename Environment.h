@@ -5,7 +5,7 @@
 
 #include "stdafx.h"
 enum class GameState {
-	PLAYING, PAUSED, WIN, LOSE
+	PLAYING, PAUSED, WIN, LOSE, BLOCK_MOVING 
 };
 
 #define BLOCK_HORIZONTAL 7
@@ -13,6 +13,6 @@ enum class GameState {
 #define BLOCK_OFFSET Vec2(720/2-200, 1280/2-300);
 #define BLOCK_WIDTH 80
 #define BLOCK_HEIGHT 80
-
+#define BLOCK_VAR 4 // a number of block types
 #define SWAP(TYPE, A, B){TYPE t=A; A=B; B=t;}
 #endif

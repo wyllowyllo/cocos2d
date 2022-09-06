@@ -8,7 +8,7 @@
 
 class SceneInGame :public Scene {
 private:
-	GameState gamestate;
+	GameState state;
 
 	// if blockdata value is zero, it's empty block if value is a positive number(not zero) it's a block
 	int BlockData[BLOCK_VERTICAL][BLOCK_HORIZONTAL];
@@ -28,7 +28,7 @@ private:
 	void setBlockData(int x, int y, int type);
 	Sprite* getBlockSprite(int x, int y);
 	void setBlockSprite(int x, int y, Sprite* s);
-	void destroyBlcok(int x, int y);
+	void destroyBlock(int x, int y);
 
 	Vec2 ConvertGameCoordToBlockCoord(Vec2 Gamecoord);
 	Vec2 ConvertBlcokCoordToGameCoord(Vec2 Blockcoord);
