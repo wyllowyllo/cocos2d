@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "Environment.h"
+#include "LayerIngameUI.h"
 #endif
 
 class SceneInGame :public Scene {
@@ -49,6 +50,8 @@ private:
 	void stackEmpty();
 	bool stackFind(Vec2 value);
 	void judgeMatch(int x, int y);
+
+	LayerIngameUI* ui;
 public:
 	static SceneInGame* create();
 	virtual bool init() override;

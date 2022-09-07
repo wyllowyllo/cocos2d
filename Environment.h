@@ -10,7 +10,7 @@ enum class GameState {
 
 #define BLOCK_HORIZONTAL 7
 #define BLOCK_VERTICAL 9
-#define BLOCK_OFFSET Vec2(720/2-200, 1280/2-300);
+#define BLOCK_OFFSET Vec2(720/2-220, 1280/2-300);
 #define BLOCK_WIDTH 80
 #define BLOCK_HEIGHT 80
 #define BLOCK_VAR 4 // a number of block types

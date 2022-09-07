@@ -254,6 +254,35 @@ void SceneInGame::onEnter()
 
 void SceneInGame::initUI()
 {
+	addChild(ui = LayerIngameUI::create());
+	ui->setLocalZOrder(1); // it makes UIpanel upper on gameblock
+
+	ui->btnPause->addClickEventListener([=](Ref* r)->void {
+		if (state == GameState::PLAYING) {
+			ui->showPausePanel();
+			state = GameState::PAUSED;
+		}
+		});
+
+	ui->btnResume->addClickEventListener([=](Ref* r)->void {
+		if (state == GameState::PAUSED) {
+			ui->hidePausePanel();
+			state = GameState::PLAYING;
+		}
+		});
+
+	ui->btnRestart->addClickEventListener([=](Ref* r)->void {
+		if (state == GameState::PAUSED) {
+			//TODO: Restart Game
+		}
+
+		});
+
+	ui->btnHome->addClickEventListener([=](Ref* r)->void {
+		if (state == GameState::PAUSED) {
+			//TODO: Pause Game
+		}
+		});
 
 }
 
@@ -288,8 +317,10 @@ void SceneInGame::alignBlcokSprite()
 bool SceneInGame::onTouchBegan(Touch* t, Event* e)
 {
 	Vec2 p = ConvertGameCoordToBlockCoord(t->getLocation());
+	Vec2 q = t->getLocation();
+	CCLOG("%f, %f", q.x, q.y);
+	//CCLOG("%f, %f", p.x, p.y);
 
-	CCLOG("%f, %f", p.x, p.y);
 	if (state == GameState::PLAYING) {  // Func 'DestroyBlock' doesn't work when the state isn't a 'PLAYING'
 		if (p.x >= BLOCK_HORIZONTAL || p.x < 0) return true;
 		if (p.y >= BLOCK_VERTICAL || p.y < 0) return true;
