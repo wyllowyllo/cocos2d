@@ -31,7 +31,7 @@ private:
 	void destroyBlcok(int x, int y);
 
 	Vec2 ConvertGameCoordToBlockCoord(Vec2 Gamecoord);
-	Vec2 ConvertBlcokCoordToGameCoord(Vec2 Blockcoord);
+	Vec2 ConvertBlockCoordToGameCoord(Vec2 Blockcoord);
 
 	// 아래에서부터 찾아 올라가면서 비어있는 블록을 찾고
 	//-1이 리턴이 되면 비어있는 블록이 없다는 뜻

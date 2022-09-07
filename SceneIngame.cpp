@@ -36,7 +36,15 @@ void SceneInGame::setBlockSprite(int x, int y, Sprite* s)
 void SceneInGame::destroyBlcok(int x, int y)
 {
 	if (BlockData[y][x] != 0) {
-		BlockSprite[y][x]->removeFromParent();
+		//BlockSprite[y][x]->removeFromParent();
+		BlockSprite[y][x]->runAction(Sequence::create(
+			FadeOut::create(0.125f),
+			FadeIn::create(0.125f),
+			FadeOut::create(0.125f),
+			FadeIn::create(0.125f),
+			Spawn::create(ScaleTo::create(0.125f, 0.0), FadeOut::create(0.125f), nullptr),
+			nullptr
+		));
 		BlockSprite[y][x] = nullptr;
 		BlockData[y][x] = 0;
 	}
@@ -53,7 +61,7 @@ Vec2 SceneInGame::ConvertGameCoordToBlockCoord(Vec2 Gamecoord)
 	return pos;
 }
 
-Vec2 SceneInGame::ConvertBlcokCoordToGameCoord(Vec2 Blockcoord)
+Vec2 SceneInGame::ConvertBlockCoordToGameCoord(Vec2 Blockcoord)
 {
 	Vec2 blockOrigin = BLOCK_OFFSET - Vec2((BLOCK_HORIZONTAL * BLOCK_WIDTH) / 2, (BLOCK_VERTICAL * BLOCK_HEIGHT) / 2)
 		+ Vec2(BLOCK_WIDTH, BLOCK_HEIGHT) / 2;
@@ -98,10 +106,17 @@ void SceneInGame::DropBlock(int x)
 			SWAP(Sprite*, a, b);
 			setBlockSprite(x, empty_y, a);
 			setBlockSprite(x, filled_y, b);
+
+			a->runAction(Sequence::create(
+				DelayTime::create(0.625f),
+				MoveTo::create(0.125f, ConvertBlockCoordToGameCoord(Vec2(x,empty_y))),
+				nullptr
+			));
 		}
 		
 	}
-	alignBlcokSprite();
+	//alignBlcokSprite(); ->Animation effect(Dropping block below)  added 
+
 }
 
 void SceneInGame::stackPush(Vec2 value)
@@ -200,7 +215,7 @@ void SceneInGame::alignBlcokSprite()
 	for (int i = 0; i < BLOCK_HORIZONTAL; i++) {
 		for (int k = 0; k < BLOCK_VERTICAL; k++) {
 			auto s = getBlockSprite(i, k);
-			if (s != nullptr) s->setPosition(ConvertBlcokCoordToGameCoord(Vec2(i, k)));
+			if (s != nullptr) s->setPosition(ConvertBlockCoordToGameCoord(Vec2(i, k)));
 		}
 	}
 }
