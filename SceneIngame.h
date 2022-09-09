@@ -9,7 +9,7 @@
 class SceneInGame :public Scene {
 private:
 	GameState gamestate;
-
+	bool IsDrop;
 	// if blockdata value is zero, it's empty block if value is a positive number(not zero) it's a block
 	int BlockData[BLOCK_VERTICAL][BLOCK_HORIZONTAL];
 
@@ -49,6 +49,7 @@ private:
 	void stackEmpty();
 	bool stackFind(Vec2 value);
 	void judgeMatch(int x, int y);
+	int push_cnt = 0;
 public:
 	static SceneInGame* create();
 	virtual bool init() override;

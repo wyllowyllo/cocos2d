@@ -86,6 +86,7 @@ int SceneInGame::findFilledBlockIndex(int x, int y)
 
 void SceneInGame::DropBlock(int x)
 {
+	
 	for (int i = 0; i < BLOCK_VERTICAL; i++) {
 		int empty_y = findEmptyBlockIndex(x, i);
 		if (empty_y == -1) continue;
@@ -113,6 +114,7 @@ void SceneInGame::DropBlock(int x)
 				nullptr
 			));
 		}
+		judgeMatch(x, i);
 		
 	}
 	//alignBlcokSprite(); ->Animation effect(Dropping block below)  added 
@@ -149,6 +151,48 @@ bool SceneInGame::stackFind(Vec2 value)
 
 void SceneInGame::judgeMatch(int x, int y)
 {
+	stackPush(Vec2(x, y));
+	for (int i = 0; i < 4; i++) {
+		int inc_x;
+		int inc_y;
+		int cur_x = x;
+		int cur_y = y;
+		int curblock = getBlockData(x, y);
+
+		switch (i) {
+		case 0: inc_x = 1; inc_y = 0; break;
+		case 1: inc_x = -1; inc_y = 0; push_cnt = 0; break;
+		case 2: inc_x = 0; inc_y = 1; break;
+		case 3: inc_x = 0; inc_y = -1; push_cnt = 0; break;
+		}
+		while (true) {
+			cur_x += inc_x;
+			cur_y += inc_y;
+			if (cur_x >= BLOCK_HORIZONTAL || cur_x < 0) break;
+			if (cur_y >= BLOCK_VERTICAL || cur_y < 0) break;
+
+			if (getBlockData(cur_x, cur_y) == curblock) {
+				stackPush(Vec2(cur_x, cur_y));
+				push_cnt++;
+			}
+			else break;
+		}
+		if (i % 2 == 0) continue;
+
+		if (push_cnt < 2)
+		{
+			for (int i = 0; i < push_cnt; i++)
+				stackPop();
+		}
+
+		if (judgeStackCount >1) {
+			while (judgeStackCount > 0) {
+				Vec2 a=stackPop();
+				destroyBlcok(a.x, a.y);
+			}
+		}
+		stackEmpty();
+	}
 
 }
 
