@@ -8,7 +8,7 @@
 
 class SceneInGame :public Scene {
 private:
-	GameState gamestate;
+	GameState state;
 	bool IsDrop;
 	// if blockdata value is zero, it's empty block if value is a positive number(not zero) it's a block
 	int BlockData[BLOCK_VERTICAL][BLOCK_HORIZONTAL];

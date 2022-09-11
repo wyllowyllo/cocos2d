@@ -5,7 +5,7 @@
 
 #include "stdafx.h"
 enum class GameState {
-	PLAYING, PAUSED, WIN, LOSE
+	PLAYING, PAUSED, WIN, LOSE, BLOCK_MOVING
 };
 
 #define BLOCK_HORIZONTAL 7

@@ -36,6 +36,7 @@ void SceneInGame::setBlockSprite(int x, int y, Sprite* s)
 void SceneInGame::destroyBlcok(int x, int y)
 {
 	if (BlockData[y][x] != 0) {
+		state = GameState::BLOCK_MOVING;
 		//BlockSprite[y][x]->removeFromParent();
 		BlockSprite[y][x]->runAction(Sequence::create(
 			FadeOut::create(0.125f),
@@ -48,6 +49,13 @@ void SceneInGame::destroyBlcok(int x, int y)
 		));
 		BlockSprite[y][x] = nullptr;
 		BlockData[y][x] = 0;
+
+		this->runAction(Sequence::create(
+			DelayTime::create(0.625f),
+			CallFunc::create([=]() {DropBlock(x); }),
+			nullptr
+		));
+
 	}
 }
 
@@ -87,12 +95,18 @@ int SceneInGame::findFilledBlockIndex(int x, int y)
 
 void SceneInGame::DropBlock(int x)
 {
+	bool isDrop = false;
 	
 	for (int i = 0; i < BLOCK_VERTICAL; i++) {
 		int empty_y = findEmptyBlockIndex(x, i);
 		if (empty_y == -1) continue;
 		int filled_y = findFilledBlockIndex(x, empty_y +1);
-		if (filled_y == -1) continue;
+		if (filled_y == -1) { 
+			createBlock(x, empty_y, rand() % 4 + 1);
+			BlockSprite[empty_y][x]->setPosition(ConvertBlockCoordToGameCoord(Vec2(x, BLOCK_VERTICAL+1)));
+			BlockSprite[empty_y][x]->runAction(MoveTo::create(0.125f, ConvertBlockCoordToGameCoord(Vec2(x, empty_y))));
+			continue;
+		}
 
 		{
 			int a = getBlockData(x, empty_y);
@@ -109,17 +123,20 @@ void SceneInGame::DropBlock(int x)
 			setBlockSprite(x, empty_y, a);
 			setBlockSprite(x, filled_y, b);
 
-			a->runAction(Sequence::create(
-				DelayTime::create(0.625f),
-				MoveTo::create(0.125f, ConvertBlockCoordToGameCoord(Vec2(x,empty_y))),
-				nullptr
-			));
+			a->stopAllActions();
+			a->runAction(
+				MoveTo::create(0.125f, ConvertBlockCoordToGameCoord(Vec2(x,empty_y)))
+			);
 		}
-		
+		isDrop = true;
 	}
-	//alignBlcokSprite(); ->Animation effect(Dropping block below)  added 
-	for (int i = 0; i < BLOCK_VERTICAL; i++)
-		judgeMatch(x, i);
+	if (isDrop) {
+		//alignBlcokSprite(); ->Animation effect(Dropping block below)  added 
+		for (int i = 0; i < BLOCK_VERTICAL; i++)
+			judgeMatch(x, i);
+	}
+	else
+		state = GameState::PLAYING;
 }
 
 void SceneInGame::stackPush(Vec2 value)
@@ -189,13 +206,15 @@ void SceneInGame::judgeMatch(int x, int y)
 				stackPop();
 		}
 
-		if (judgeStackCount >1) {
+		if (judgeStackCount > 1) {
 			while (judgeStackCount > 0) {
-				Vec2 a=stackPop();
+				Vec2 a = stackPop();
 				destroyBlcok(a.x, a.y);
 			}
 
 		}
+		else
+			state = GameState::PLAYING;
 		stackEmpty();
 	}
 
@@ -274,8 +293,13 @@ bool SceneInGame::onTouchBegan(Touch* t, Event* e)
 	Vec2 p = ConvertGameCoordToBlockCoord(t->getLocation());
 
 	CCLOG("%f, %f", p.x, p.y);
-	destroyBlcok(p.x, p.y);
-	DropBlock(p.x);
+
+	if (state == GameState::PLAYING) {
+		if (p.x < 0 || p.x >= BLOCK_HORIZONTAL) return true;
+		if (p.y < 0 || p.y >= BLOCK_VERTICAL) return true;
+		destroyBlcok(p.x, p.y);
+	}
+	//DropBlock(p.x);
 	return true;
 }
 
