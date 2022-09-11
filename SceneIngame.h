@@ -49,7 +49,7 @@ private:
 	void stackEmpty();
 	bool stackFind(Vec2 value);
 	void judgeMatch(int x, int y);
-	int push_cnt = 0;
+	
 public:
 	static SceneInGame* create();
 	virtual bool init() override;
