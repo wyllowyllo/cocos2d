@@ -44,10 +44,13 @@ bool SceneHome::init()
 	btnStart->setTitleText("Start Game");
 	btnQuit->setTitleText("Quit Game");
 
+	Global::getInstance()->stopMackgroundMusic();
+
 	btnStart->addClickEventListener([=](Ref*) {
 		auto scene = SceneInGame::create();
 		auto transit = TransitionSlideInR::create(0.125f, scene);
 		Director::getInstance()->replaceScene(transit);
+		Global::getInstance()->playPop();
 		});
 	btnQuit->addClickEventListener([=](Ref*) {
 		Director::getInstance()->end();

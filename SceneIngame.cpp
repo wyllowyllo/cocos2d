@@ -60,7 +60,7 @@ void SceneInGame::destroyBlock(int x, int y)
 	}
 }
 
-Vec2 SceneInGame::ConvertGameCoordToBlockCoord(Vec2 Gamecoord)
+Vec2 SceneInGame::ConvertGameCoordToBlockCoord(const Vec2& Gamecoord)
 {
 	Vec2 BlockOrigin = BLOCK_OFFSET -
 		Vec2((BLOCK_HORIZONTAL * BLOCK_WIDTH) / 2, (BLOCK_VERTICAL * BLOCK_HEIGHT) / 2)
@@ -71,7 +71,7 @@ Vec2 SceneInGame::ConvertGameCoordToBlockCoord(Vec2 Gamecoord)
 	return pos;
 }
 
-Vec2 SceneInGame::ConvertBlcokCoordToGameCoord(Vec2 Blockcoord)
+Vec2 SceneInGame::ConvertBlcokCoordToGameCoord(const Vec2& Blockcoord)
 {
 	Vec2 blockOrigin = BLOCK_OFFSET - Vec2((BLOCK_HORIZONTAL * BLOCK_WIDTH) / 2, (BLOCK_VERTICAL * BLOCK_HEIGHT) / 2)
 		+ Vec2(BLOCK_WIDTH, BLOCK_HEIGHT) / 2;
@@ -96,7 +96,7 @@ int SceneInGame::findFilledBlockIndex(int x, int y)
 
 void SceneInGame::DropBlock(int x)
 {
-	bool isDrop = false;
+	bool isDrop = false; // 최상단 블록이 추가되지 않을 경우에 유효함
 	for (int i = 0; i < BLOCK_VERTICAL; i++) {
 		int empty_y = findEmptyBlockIndex(x, i);
 		if (empty_y == -1) continue;
@@ -105,6 +105,7 @@ void SceneInGame::DropBlock(int x)
 				createBlock(x, empty_y, rand() % BLOCK_VAR + 1);
 				BlockSprite[empty_y][x]->setPosition(ConvertBlcokCoordToGameCoord(Vec2(x, BLOCK_VERTICAL+1)));
 				BlockSprite[empty_y][x]->runAction(MoveTo::create(0.125f, ConvertBlcokCoordToGameCoord(Vec2(x, empty_y))));
+				isDrop = true;
 				continue;
 		}
 			
@@ -131,21 +132,22 @@ void SceneInGame::DropBlock(int x)
 	//alignBlcokSprite();
 	if (isDrop) {
 		for (int i = 0; i < BLOCK_VERTICAL; i++) {
-			judgeMatch(x, i);
+			this->runAction(Sequence::create(DelayTime::create(0.1f), CallFunc::create([=]() {judgeMatch(x, i); }), nullptr));
+			
 		}
 	}
 	else
 		state = GameState::PLAYING;
 }
 
-void SceneInGame::stackPush(Vec2 value)
+void SceneInGame::stackPush(const Vec2& value)
 {
 	if (judgeData[(int)value.y][(int)value.x] != 0) return; //prevent from overlap insert
 	judgeStack[judgeStackCount++] = value;
 	judgeData[(int)value.y][(int)value.x] = 1;
 }
 
-Vec2 SceneInGame::stackPop()
+const Vec2& SceneInGame::stackPop()
 {
 	auto ret = judgeStack[--judgeStackCount];
 	judgeData[(int)ret.y][(int)ret.x] = 0;
@@ -161,7 +163,7 @@ void SceneInGame::stackEmpty()
 	}
 }
 
-bool SceneInGame::stackFind(Vec2 value)
+bool SceneInGame::stackFind(const Vec2& value)
 {
 	return judgeData[(int)value.y][(int)value.x] == 1;
 }
@@ -190,8 +192,8 @@ void SceneInGame::judgeMatch(int x, int y)
 		while (true) {
 			next_x += inc_x;
 			next_y += inc_y;
-			if (next_x<0 || next_x>BLOCK_HORIZONTAL) break;
-			if (next_y<0 || next_y>BLOCK_VERTICAL) break;
+			if (next_x<0 || next_x>=BLOCK_HORIZONTAL) break;
+			if (next_y<0 || next_y>=BLOCK_VERTICAL) break;
 
 			if (getBlockData(next_x, next_y) == blockdata) {
 				stackPush(Vec2(next_x, next_y));
@@ -265,6 +267,7 @@ void SceneInGame::initUI()
 		if (state == GameState::PLAYING) {
 			ui->showPausePanel();
 			state = GameState::PAUSED;
+			Global::getInstance()->playPop();
 		}
 		});
 
@@ -272,6 +275,7 @@ void SceneInGame::initUI()
 		if (state == GameState::PAUSED) {
 			ui->hidePausePanel();
 			state = GameState::PLAYING;
+			Global::getInstance()->playPop();
 		}
 		});
 
@@ -284,6 +288,7 @@ void SceneInGame::initUI()
 			this->initGame();
 			this->StartGame();
 			state = GameState::PLAYING;
+			Global::getInstance()->playPop();
 		}
 
 		});
@@ -293,6 +298,7 @@ void SceneInGame::initUI()
 			auto scene = SceneHome::create();
 			auto transit = TransitionSlideInL::create(0.125f, scene);
 			Director::getInstance()->replaceScene(transit);
+			Global::getInstance()->playPop();
 		}
 		});
 
@@ -366,6 +372,7 @@ void SceneInGame::onTouchEnded(Touch* t, Event* e)
 
 void SceneInGame::StartGame()
 {
+	Global::getInstance()->playBackgroundMusic();
 }
 
 void SceneInGame::PauseGame()

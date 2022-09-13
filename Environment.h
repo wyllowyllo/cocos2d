@@ -22,11 +22,17 @@ class Global {
 private:
 	Global(){}
 	long long score = 0;
+	int backgoundMusicId;
 public:
 	static Global* getInstance();
 
 	void setScore(long long value);
 	long long getScore();
 	void addScore(long long value);
+
+	void playPop();
+	void playBackgroundMusic();
+	void stopMackgroundMusic();
+	void blockPopMusic();
 };
 #endif
