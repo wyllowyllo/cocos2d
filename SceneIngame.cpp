@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SceneIngame.h"
+#include "SceneHome.h"
 
 
 
@@ -206,10 +207,13 @@ void SceneInGame::judgeMatch(int x, int y)
 			}
 		}
 		if (judgeStackCount > 1) {
+			Global::getInstance()->addScore(judgeStackCount * 10);
+			ui->setScore(Global::getInstance()->getScore());
 			while (judgeStackCount > 0) {
 				Vec2 p = stackPop();
 				destroyBlock(p.x, p.y);
 			}
+			
 		}
 		else
 			state = GameState::PLAYING;
@@ -273,14 +277,22 @@ void SceneInGame::initUI()
 
 	ui->btnRestart->addClickEventListener([=](Ref* r)->void {
 		if (state == GameState::PAUSED) {
-			//TODO: Restart Game
+			ui->hidePausePanel();
+			ui->setScore(0);
+
+			this->destroyGame();
+			this->initGame();
+			this->StartGame();
+			state = GameState::PLAYING;
 		}
 
 		});
 
 	ui->btnHome->addClickEventListener([=](Ref* r)->void {
 		if (state == GameState::PAUSED) {
-			//TODO: Pause Game
+			auto scene = SceneHome::create();
+			auto transit = TransitionSlideInL::create(0.125f, scene);
+			Director::getInstance()->replaceScene(transit);
 		}
 		});
 
@@ -288,6 +300,7 @@ void SceneInGame::initUI()
 
 void SceneInGame::initGame()
 {
+	Global::getInstance()->setScore(0);
 	for (int i = 0; i < BLOCK_HORIZONTAL; i++)
 	{
 		for (int k = 0; k < BLOCK_VERTICAL; k++)
@@ -302,6 +315,14 @@ void SceneInGame::destroyUI()
 
 void SceneInGame::destroyGame()
 {
+	Global::getInstance()->setScore(0);
+	for (int i = 0; i < BLOCK_HORIZONTAL; i++) {
+		for (int k = 0; k < BLOCK_VERTICAL; k++) {
+			setBlockData(i, k, 0);
+			getBlockSprite(i,k)->removeFromParent();
+			setBlockSprite(i, k, nullptr);
+		}
+	}
 }
 
 void SceneInGame::alignBlcokSprite()

@@ -15,4 +15,18 @@ enum class GameState {
 #define BLOCK_HEIGHT 80
 #define BLOCK_VAR 4 // a number of block types
 #define SWAP(TYPE, A, B){TYPE t=A; A=B; B=t;}
+
+#define FONT_NAME "fonts/SDSamliphopangcheTTFBasic.ttf"
+
+class Global {
+private:
+	Global(){}
+	long long score = 0;
+public:
+	static Global* getInstance();
+
+	void setScore(long long value);
+	long long getScore();
+	void addScore(long long value);
+};
 #endif

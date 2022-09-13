@@ -25,6 +25,10 @@
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
 #include "SceneIngame.h"
+#include "SceneHome.h"
+
+
+
 // #define USE_AUDIO_ENGINE 1
 
 #if USE_AUDIO_ENGINE
@@ -109,7 +113,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
     // create a scene. it's an autorelease object
     //auto scene = HelloWorld::createScene();
-    auto scene = SceneInGame::create();
+    //auto scene = SceneInGame::create();
+    auto scene = SceneHome::create();
     director->getOpenGLView()->setFrameZoomFactor(0.75);
     // run
     director->runWithScene(scene);
