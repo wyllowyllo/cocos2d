@@ -185,7 +185,7 @@ void SceneInGame::judgeMatch(int x, int y)
 		switch (i) {
 		case 0: inc_x = 1; inc_y = 0; push_cnt = 0; break;
 		case 1: inc_x = -1; inc_y = 0; break;
-		case 2: inc_x = 0; inc_y = 1; push_cnt = 0; break;
+		case 2: inc_x = 0; inc_y = 1; push_cnt = 0; stackPush(Vec2(x, y)); break;
 		case 3: inc_x = 0; inc_y = -1; break;
 		}
 
@@ -211,7 +211,7 @@ void SceneInGame::judgeMatch(int x, int y)
 		if (judgeStackCount > 1) {
 			Global::getInstance()->addScore(judgeStackCount * 10);
 			ui->setScore(Global::getInstance()->getScore());
-			while (judgeStackCount > 0) {
+			while (judgeStackCount >=0) {
 				Vec2 p = stackPop();
 				destroyBlock(p.x, p.y);
 			}
