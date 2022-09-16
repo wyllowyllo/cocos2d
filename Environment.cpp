@@ -31,10 +31,11 @@ void Global::playPop()
 
 void Global::playBackgroundMusic()
 {
-	this->backgoundMusicId=AudioEngine::play2d("res/Attic Secrets.mp3", true, 0.5f);
+	if(backgoundMusicId!=-1)
+	this->backgoundMusicId=AudioEngine::play2d("res/Attic Secrets.mp3", true, 0.4f);
 }
 
-void Global::stopMackgroundMusic()
+void Global::stopBackgroundMusic()
 {
 	if (backgoundMusicId == -1) return;
 	AudioEngine::stop(this->backgoundMusicId);
@@ -42,5 +43,6 @@ void Global::stopMackgroundMusic()
 
 void Global::blockPopMusic()
 {
-	//TODO: Add a blockPop sound effect
+	AudioEngine::play2d("res/Block_Pop.mp3");
+
 }

@@ -51,6 +51,7 @@ void SceneInGame::destroyBlock(int x, int y)
 
 		BlockSprite[y][x] = nullptr;
 		BlockData[y][x] = 0;
+		//Global::getInstance()->blockPopMusic();
 
 		this->runAction(Sequence::create(
 			DelayTime::create(0.625f),
@@ -208,14 +209,14 @@ void SceneInGame::judgeMatch(int x, int y)
 				stackPop();
 			}
 		}
-		if (judgeStackCount > 1) {
+		if (judgeStackCount > 2) {
 			Global::getInstance()->addScore(judgeStackCount * 10);
 			ui->setScore(Global::getInstance()->getScore());
-			while (judgeStackCount >=0) {
+			while (judgeStackCount >0) {
 				Vec2 p = stackPop();
 				destroyBlock(p.x, p.y);
 			}
-			
+			Global::getInstance()->blockPopMusic();
 		}
 		else
 			state = GameState::PLAYING;
@@ -267,6 +268,7 @@ void SceneInGame::initUI()
 		if (state == GameState::PLAYING) {
 			ui->showPausePanel();
 			state = GameState::PAUSED;
+			Global::getInstance()->stopBackgroundMusic();
 			Global::getInstance()->playPop();
 		}
 		});
@@ -276,6 +278,7 @@ void SceneInGame::initUI()
 			ui->hidePausePanel();
 			state = GameState::PLAYING;
 			Global::getInstance()->playPop();
+			Global::getInstance()->playBackgroundMusic();
 		}
 		});
 
@@ -284,11 +287,11 @@ void SceneInGame::initUI()
 			ui->hidePausePanel();
 			ui->setScore(0);
 
+			Global::getInstance()->playPop();
 			this->destroyGame();
 			this->initGame();
 			this->StartGame();
 			state = GameState::PLAYING;
-			Global::getInstance()->playPop();
 		}
 
 		});

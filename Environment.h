@@ -32,7 +32,7 @@ public:
 
 	void playPop();
 	void playBackgroundMusic();
-	void stopMackgroundMusic();
+	void stopBackgroundMusic();
 	void blockPopMusic();
 };
 #endif

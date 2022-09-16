@@ -44,7 +44,7 @@ bool SceneHome::init()
 	btnStart->setTitleText("Start Game");
 	btnQuit->setTitleText("Quit Game");
 
-	Global::getInstance()->stopMackgroundMusic();
+	Global::getInstance()->stopBackgroundMusic();
 
 	btnStart->addClickEventListener([=](Ref*) {
 		auto scene = SceneInGame::create();
